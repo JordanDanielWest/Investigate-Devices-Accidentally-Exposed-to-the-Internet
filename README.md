@@ -154,22 +154,18 @@ In this lab, we observed and mitigated brute-force login attempts targeting an e
 ### Lab Summary — Mapped to NIST 800-61 Incident Response Lifecycle
 ## 1. Preparation
 - Reviewed the environment and identified that the target machine (windows-target-1) was potentially exposed to the public internet.
-
-    Familiarized with NSG management in Azure, Defender for Endpoint, and safe remote access practices.
-
-    Used VPN for secure admin connectivity and pre-configured Azure access to limit risk during changes.
+-  Familiarized with NSG management in Azure, Defender for Endpoint, and safe remote access practices.
+-   sed VPN for secure admin connectivity and pre-configured Azure access to limit risk during changes.
 
 ## 2. Detection & Analysis
 
-    Conducted threat hunting with KQL queries:
+- Conducted threat hunting with KQL queries:
 
-        Checked for brute-force attempts and verified no successful logins from suspicious external IPs.
+  - Checked for brute-force attempts and verified no successful logins from suspicious external IPs.
+  - Investigated internal logon events and account usage patterns.
 
-        Investigated internal logon events and account usage patterns.
-
-    Confirmed the device was publicly accessible when it should have been private-facing.
-
-    Determined risk due to potential exposure even in absence of successful exploitation.
+- Confirmed the device was publicly accessible when it should have been private-facing.
+- Determined risk due to potential exposure even in absence of successful exploitation.
 
 ## 3. Containment, Eradication, & Recovery
 
