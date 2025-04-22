@@ -100,7 +100,7 @@ I pivoted to Azure and created a custom NSG for “windows-target-1” to isolat
 - Deny-All-Inbound: Catches everything not explicitly allowed.
 
 
-<img src="https://github.com/user-attachments/assets/51afcb9f-7ca8-4860-b9de-7975847a83aa" width=500>
+<img src="https://github.com/user-attachments/assets/936d0d3e-958b-41fa-a801-f600cccdfd41" width=500>
 
 
 ---
