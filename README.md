@@ -159,18 +159,18 @@ In this lab, we observed and mitigated brute-force login attempts targeting an e
 
 ## 2. Detection & Analysis
 
-# Conducted threat hunting with KQL queries:
+### Conducted threat hunting with KQL queries:
 
   - Checked for brute-force attempts and verified no successful logins from suspicious external IPs.
   - Investigated internal logon events and account usage patterns.
 
-# Confirmed the device was publicly accessible when it should have been private-facing.
-# Determined risk due to potential exposure even in absence of successful exploitation.
+### Confirmed the device was publicly accessible when it should have been private-facing.
+### Determined risk due to potential exposure even in absence of successful exploitation.
 
 ## 3. Containment, Eradication, & Recovery
 
 ### Containment
-- Created a custom NSG (`EDR-Machine-Isolation`) with the following rules:
+- Created a custom NSG (`windtows-target-1-Isolation`) with the following rules:
   - **Deny all inbound** except RDP from trusted IP (admin workstation).
   - **Deny all outbound** to prevent external command and control (C2) communication, while preserving internal traffic if necessary (e.g., DNS/DHCP functionality).
 - Applied NSG directly to the **VM's NIC**, not the subnet, to isolate only the affected machine without impacting others.
@@ -188,10 +188,10 @@ In this lab, we observed and mitigated brute-force login attempts targeting an e
 
 ## 4. Post-Incident Activity
 
-- Reviewed and confirmed:
+### Reviewed and confirmed:
  - NSG rule effectiveness.
  - Account lockout policy enforcement.
- - Continued service availability (if part of shared infrastructure).
+ - Continued service availability.
 
 ## Lessons learned:
 - Importance of exposure audits.
