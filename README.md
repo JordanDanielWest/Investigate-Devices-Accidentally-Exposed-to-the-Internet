@@ -159,13 +159,13 @@ In this lab, we observed and mitigated brute-force login attempts targeting an e
 
 ## 2. Detection & Analysis
 
-- Conducted threat hunting with KQL queries:
+# Conducted threat hunting with KQL queries:
 
   - Checked for brute-force attempts and verified no successful logins from suspicious external IPs.
   - Investigated internal logon events and account usage patterns.
 
-- Confirmed the device was publicly accessible when it should have been private-facing.
-- Determined risk due to potential exposure even in absence of successful exploitation.
+# Confirmed the device was publicly accessible when it should have been private-facing.
+# Determined risk due to potential exposure even in absence of successful exploitation.
 
 ## 3. Containment, Eradication, & Recovery
 
