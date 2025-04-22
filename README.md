@@ -169,22 +169,22 @@ In this lab, we observed and mitigated brute-force login attempts targeting an e
 
 ## 3. Containment, Eradication, & Recovery
 
-- Containment
- - Created a custom NSG (EDR-Machine Isolation) with:
- - Deny all inbound except RDP from trusted IP (admin device).
- - Deny all outbound to prevent external C2 communication while preserving internal traffic if necessary (e.g., DNS/DHCP functionality).
--  Applied NSG directly to the VM's NIC, not the subnet, to isolate just the affected machine.
+### Containment
+- Created a custom NSG (`EDR-Machine-Isolation`) with the following rules:
+  - **Deny all inbound** except RDP from trusted IP (admin workstation).
+  - **Deny all outbound** to prevent external command and control (C2) communication, while preserving internal traffic if necessary (e.g., DNS/DHCP functionality).
+- Applied NSG directly to the **VM's NIC**, not the subnet, to isolate only the affected machine without impacting others.
 
-- Eradication
- - Implemented an account lockout policy to defend against brute-force attempts:
-  - Lockout after 5 failed login attempts.
-  - 15-minute lockout duration.
-  - Manual unlock for privileged accounts if needed.
+### Eradication
+- Implemented an **account lockout policy** to mitigate brute-force login attempts:
+  - Lockout after **5 failed login attempts**.
+  - Lockout duration set to **15 minutes**.
+  - **Manual unlock** procedure in place for privileged accounts as needed.
 
-- Recovery
- - Verified safe, controlled RDP access for future administrative work.
- - Left internal communication intact for shared services if applicable.
- - Documented configuration changes and rule names professionally (e.g., Allow-RDP-From-Admin-Workstation).
+### Recovery
+- Verified **safe and controlled RDP access** for future administrative tasks.
+- Ensured **internal communication remained intact** for shared services (e.g., domain services, DNS).
+- **Documented** all configuration changes and named rules professionally (e.g., `Permit-RDP-Trusted-Device`).
 
 ## 4. Post-Incident Activity
 
