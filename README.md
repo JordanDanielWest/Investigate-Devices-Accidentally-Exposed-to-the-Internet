@@ -121,9 +121,6 @@ After identifying `windows-target-1` as unintentionally exposed to the public in
 
 ### MITRE ATT&CK TTPs Identified
 
-MITRE
-# MITRE ATT&CK TTPs Relevant to This Lab
-
 ##  Initial Access
 - **T1078 – Valid Accounts**  
   Brute-force login attempts were observed against the exposed RDP service on the public-facing VM. These attempts came from external IPs trying to guess valid account credentials.
