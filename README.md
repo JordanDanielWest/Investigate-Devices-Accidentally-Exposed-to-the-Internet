@@ -106,10 +106,11 @@ I pivoted to Azure and created a custom NSG for “windows-target-1” to isolat
 
 ---
 
-### 5. Edit Lockout Account policy
+### 5. Implement Account Lockout Policy
 
 
-Edit Lockout Account policy
+Navigate to: Computer Configuration > Windows Settings > Security Settings > Account Policies > Account Lockout Policy
+
 
 
 ![image](https://github.com/user-attachments/assets/25198a06-3d62-44aa-b7cf-d2f0855488ae)
