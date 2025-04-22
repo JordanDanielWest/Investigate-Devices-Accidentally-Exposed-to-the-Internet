@@ -116,122 +116,47 @@ Edit Lockout Account policy
 
 
 ---
-
-### 6. Search `DeviceProcessEvents`
-
-To confirm user execution of PowerShell, I ran a query that included explorer.exe to verify an interactive login session. The results confirmed that user account `ds9-cisco` launched powershell.exe, which subsequently executed the portscan.ps1 script targeting RemoteIP `10.0.0.5`.
-
-```kql
-DeviceProcessEvents
-| where DeviceName == "edr-machine"
-| where Timestamp between (datetime(2025-04-20T13:11:00Z) .. datetime(2025-04-20T13:13:00Z))
-| where FileName == "explorer.exe" or FileName == "powershell.exe"
-| project Timestamp, AccountDomain, FileName, ProcessCommandLine, InitiatingProcessFileName, InitiatingProcessParentFileName, AccountName
-| sort by Timestamp desc
-
-```
-![image](https://github.com/user-attachments/assets/ab040842-5f25-4f81-92a9-264135180920)
-
----
 ### Response:
 
-I immediately isolated `edr-machine` from the network to prevent further lateral movement or scanning. Collected forensic logs and exported relevant artifacts including `portscan.ps1`. Forwarded a detailed report to ds9-cisco's manager and the internal HR/security liaison. Created a case for potential policy violation and escalation.
+After identifying `windows-target-1` as unintentionally exposed to the public internet, immediate containment measures were applied. A custom NSG `windows-target-1 Isolation` was assigned to the VM's NIC, restricting all outbound communication and allowing only secure RDP access from a trusted administrative IP. Additionally, a local account lockout policy was enforced, limiting login attempts and mitigating brute-force risk. These steps ensure isolation of the affected machine and reduce exposure while further investigation and remediation continue.
 
 ---
 
 
 ### MITRE ATT&CK TTPs Identified
 
-- **Technique:** PowerShell  
-  **ID:** T1059.001  
-  **Description:** Execution of PowerShell with `-ExecutionPolicy Bypass` to run a script.
+MITRE
+# MITRE ATT&CK TTPs Relevant to This Lab
 
-- **Technique:** Command and Scripting Interpreter  
-  **ID:** T1059  
-  **Description:** Use of PowerShell as a scripting interpreter to execute commands.
+##  Initial Access
+- **T1078 – Valid Accounts**  
+  Brute-force login attempts were observed against the exposed RDP service on the public-facing VM. These attempts came from external IPs trying to guess valid account credentials.
 
-#### Defense Evasion
+- **T1133 – External Remote Services**  
+  The public-facing VM was exposed to the internet via RDP, providing a potential entry point for external attackers trying to gain initial access through external remote services.
 
-- **Technique:** Bypass User Account Control  
-  **ID:** T1548.002  
-  **Description:** Use of `-ExecutionPolicy Bypass` to avoid PowerShell execution restrictions.
+---
 
-#### Discovery
+##  Credential Access
+- **T1110 – Brute Force**  
+  Multiple brute-force login attempts from external IP addresses were observed, targeting the RDP service. Although these attempts were unsuccessful, the risk of a successful brute-force attack was significant.
 
-- **Technique:** Network Service Scanning  
-  **ID:** T1046  
-  **Description:** Use of a port scanning script to identify open ports and services on the internal network.
+---
 
-- **Technique:** System Network Connections Discovery  
-  **ID:** T1049  
-  **Description:** Enumeration of active network connections or mapping of internal hosts.
+##  Mitigation Steps Taken
+- **M1030 – Network Segmentation**  
+  A custom Network Security Group (NSG) was created and associated with the VM to isolate it from the internet and restrict inbound RDP access. This mitigates the risk of unauthorized external access to the machine.
 
-#### Command and Control
+- **M1036 – Account Use Policies**  
+  An account lockout policy was configured to mitigate brute-force attacks. Accounts will be locked after five failed login attempts for a period of 15 minutes, significantly reducing the likelihood of successful brute-force login attempts.
 
-- **Technique:** Ingress Tool Transfer  
-  **ID:** T1105  
-  **Description:** Download of `portscan.ps1` from an external GitHub repository.
 
 
 ---
 
-## Chronological Event Timeline 
-
-1. **User Login – ds9-cisco**
-
-    **Timestamp:** 2025-04-20T13:11:30Z  
-    **Event:** The user account `ds9-cisco` logged into `edr-machine` via an interactive session.  
-    **Action:** Successful logon captured in `DeviceLogonEvents`.  
-    **Logon Type:** Interactive (likely via RDP or local console access).
-
-2. **Session Initialization – explorer.exe**
-
-    **Timestamp:** 2025-04-20T13:11:36Z  
-    **Event:** `explorer.exe` was launched under the `ds9-cisco` session.  
-    **Action:** Confirms an interactive user session was fully initialized.  
-    **Process Chain:** `winlogon.exe → userinit.exe → explorer.exe`
-
-3. **Initial PowerShell Launch**
-
-    **Timestamp:** 2025-04-20T13:12:10Z  
-    **Event:** `powershell.exe` was launched manually during the session.  
-    **Action:** No script execution yet, just interactive PowerShell access.  
-    **Parent Process:** `explorer.exe`  
-    **Command:** `powershell.exe`
-
-4. **Script Execution – Portscan Script (portscan.ps1)**
-
-    **Timestamp:** 2025-04-20T13:12:29Z  
-    **Event:** The user `ds9-cisco` executed the `portscan.ps1` script.  
-    **Action:** The script was downloaded via `Invoke-WebRequest` and run with bypassed execution policy.  
-    **File Path:** `C:\programdata\portscan.ps1`  
-    **Process Path:** `C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`  
-    **Command:** `powershell.exe -ExecutionPolicy Bypass -File C:\programdata\portscan.ps1`  
-    **Parent Process:** `cmd.exe`, originally launched by PowerShell.
-
-5. **Port Scan Activity**
-
-    **Timestamp Range:** 2025-04-20T13:12:30Z → 13:13:01Z  
-    **Event:** The script initiated numerous connection attempts to internal IPs, especially targeting `10.0.0.5`.  
-    **Action:** Identified as internal port scanning, likely probing for open services.  
-    **Table Reference:** `DeviceNetworkEvents` confirmed failed connections originating from `edr-machine`.
+## Conclusion
+In this lab, we observed and mitigated brute-force login attempts targeting an exposed VM. The primary steps taken to reduce the risk of future attacks included isolating the machine using a custom NSG, implementing an account lockout policy, and used Defender for Endpoint to detect suspicious activities. These actions were aligned with best practices for securing exposed devices and preventing credential-based attacks.
 
 
 ---
-
-## Summary
-
-Through a timeline-based investigation, it was determined that the user account `ds9-cisco` logged into `edr-machine` and initiated a PowerShell session during an active desktop session. Shortly thereafter, a script named `portscan.ps1` was executed, which triggered an internal port scanner targeting IPs in the 10.0.0.0/16 subnet. Logs confirmed 23 failed connections to internal devices, consistent with port scanning behavior. The parent-child process chain and timestamps support that this action was manually initiated by the logged-in user.
-
----
-
-## Recommendations and Improvements
-
-To reduce the attack surface and mitigate similar behavior in the future, the following measures are recommended:
-- Restrict PowerShell usage: Apply Group Policy to limit PowerShell usage to administrators or known automation accounts.
-- Constrain Execution Policy: Set organization-wide default PowerShell Execution Policy to AllSigned or Restricted.
-- Implement AppLocker or WDAC: Block unapproved script execution paths such as C:\programdata\ or C:\Users\Public\.
-- Monitor for Suspicious Web Requests: Enable alerts for Invoke-WebRequest and similar tools accessing external domains.
-- Enable Network Segmentation: Prevent unrestricted communication across all devices on the internal subnet.
-- User Awareness Training: Educate employees about acceptable use policies and risks associated with internal scanning or scripting tools.
 
