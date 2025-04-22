@@ -50,7 +50,7 @@ Last internet facing time was: 2025-04-22T17:49:17.4752262Z
 
 Ran a query in `DeviceLogonEvents` to identify potential brute force attempts.
 
-**Query used to locate event:**
+**Query used to locate events:**
 
 ```kql
 
