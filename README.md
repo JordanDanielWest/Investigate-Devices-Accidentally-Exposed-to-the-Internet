@@ -153,8 +153,7 @@ In this lab, we observed and mitigated brute-force login attempts targeting an e
 ---
 ### Lab Summary — Mapped to NIST 800-61 Incident Response Lifecycle
 ## 1. Preparation
-
-    Reviewed the environment and identified that the target machine (windows-target-1) was potentially exposed to the public internet.
+- Reviewed the environment and identified that the target machine (windows-target-1) was potentially exposed to the public internet.
 
     Familiarized with NSG management in Azure, Defender for Endpoint, and safe remote access practices.
 
