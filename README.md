@@ -1,7 +1,8 @@
 # Investigate-Devices-Accidentally-Exposed-to-the-Internet
 
 <p align="center">
-  <img src=https://github.com/user-attachments/assets/72c897db-4f25-48a6-8256-74625acb1d7c width="500">
+  ![image](https://github.com/user-attachments/assets/0b6c6771-5a16-42fa-aeb9-9b3525bcb707)
+
 </p>
 
 
