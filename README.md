@@ -106,25 +106,14 @@ I pivoted to Azure and created a custom NSG for “windows-target-1” to isolat
 
 ---
 
-### 5. Search `DeviceLogonEvents` table
+### 5. Edit Lockout Account policy
 
-I then pivoted to the DeviceLogonEvents table and found that the user account `ds9-cisco` logged in 2 minutes before the script was run at Apr 20, 2025 8:11:30 AM.
 
-**Query used to locate events:**
+Edit Lockout Account policy
 
-```kql
-//use Logon events to determine if a user initiated the portscan
-let SpecificTime = datetime(2025-04-20T13:12:29.9031119Z);
-DeviceLogonEvents
-| where DeviceName == "edr-machine"
-| where Timestamp between ((SpecificTime - 1m) .. (SpecificTime + 1m))
-| project Timestamp, ActionType, LogonType, AccountDomain, AccountName
-| where ActionType == "LogonSuccess"
-| sort by Timestamp desc
 
-```
+![image](https://github.com/user-attachments/assets/25198a06-3d62-44aa-b7cf-d2f0855488ae)
 
-![image](https://github.com/user-attachments/assets/68044cb0-9238-4fb6-9d11-ab450c83256d)
 
 ---
 
