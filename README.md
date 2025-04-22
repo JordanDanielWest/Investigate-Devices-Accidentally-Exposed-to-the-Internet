@@ -22,85 +22,86 @@ During routine maintenance, the security team is tasked with investigating any V
 - **Check `DeviceInfo`** 
 - **Use `DeviceLogonEvents`** 
 
-
 ---
 
 ## Steps Taken
 
-### 1. Searched the `DeviceNetworkEvents` Table
+### 1. Searched the `DeviceInfo` Table
 
-I started by searching for failed connection attempts in DeviceNetworkEvents table and discovered 23 failed connections on endpoint `edr-machine`.
+`Windows-target-1` has been internet facing for several days.
 
 **Query used to locate events:**
 
 ```kql
-DeviceNetworkEvents
-| where ActionType == "ConnectionFailed"
-| summarize FailedConnectionAttempts = count() by DeviceName, ActionType, LocalIP, RemoteIP
-| order by FailedConnectionAttempts desc
+//Check how long target device has been internet facing
+DeviceInfo
+| where DeviceName == "windows-target-1"
+| where IsInternetFacing == true
+|order by Timestamp desc
 
 ```
-![image](https://github.com/user-attachments/assets/1a2741e0-255a-4d5d-9383-6b915cb37740)
+![image](https://github.com/user-attachments/assets/d2752e30-c01a-4c1d-b449-bae7cfeae5a0)
+
+Last internet facing time was: 2025-04-22T17:49:17.4752262Z
 
 ---
 
-### 2. Searched the `DeviceNetworkEvents` Table
+### 2. Searched the `DevicelogonEvents` Table
 
-I then ran a query in the DeviceNetworkEvents table to look deeper into the connection attempts between `edr-machine` and port `10.0.0.5` and based on the sequential order of ports I believe a port scan was run.
-
+Ran a query in `DeviceLogonEvents` to identify potential brute force attempts.
 
 **Query used to locate event:**
 
 ```kql
 
-DeviceNetworkEvents
-| where DeviceName == "edr-machine"
-| where RemoteIP == "10.0.0.5"
-| sort by Timestamp desc
+// Check most failed logons
+DeviceLogonEvents
+| where DeviceName == "windows-target-1"
+| where LogonType has_any("Network", "Interactive", "RemoteInteractive", "Unlock")
+| where ActionType == "LogonFailed"
+| where isnotempty(RemoteIP)
+| summarize Attempts = count() by ActionType, RemoteIP, DeviceName
+| order by Attempts
+
 
 ```
-![image](https://github.com/user-attachments/assets/40ddbc46-67ac-4dbe-b0cf-b57bea71a61e)
+![image](https://github.com/user-attachments/assets/d80f3f2c-d1db-483c-820d-faad5ecc6bf3)
 
 ---
 
-### 3. Searched the `DeviceProcessEvents` Table
+### 3. Searched the `DeviceLogonEvents` Table
 
-I pivoted to the DeviceProcessEvents table and found a powershell execution of `portscan.ps1` at Apr 20, 2025 8:12:29 AM.
+I then searched the top IP’s to determine if any were successful and returned no results.
 
 **Query used to locate events:**
 
 ```kql
-let SpecificTime = datetime(2025-04-20T13:12:29.9031119Z);
-DeviceProcessEvents
-| where DeviceName == "edr-machine"
-| where Timestamp between ((SpecificTime - 1m) .. (SpecificTime + 1m))
-| project Timestamp, DeviceName, ActionType, FileName, ProcessCommandLine, FolderPath
-| sort by Timestamp asc
-
+// Take the top 10 IPs with the most logon failures and see if any succeeded to logon
+let RemoteIPsInQuestion = dynamic(["197.210.194.240","103.20.195.132", "64.251.180.218", "180.193.221.205", "147.135.222.78", "135.125.90.97", "178.20.129.235", "80.253.246.51", "192.248.104.29", "90.63.253.204"]);
+DeviceLogonEvents
+|where DeviceName == "windows-target-1"
+| where LogonType has_any("Network", "Interactive", "RemoteInteractive", "Unlock")
+| where ActionType == "LogonSuccess"
+| where RemoteIP has_any(RemoteIPsInQuestion)
 ```
-
-![image](https://github.com/user-attachments/assets/05a0d470-61d8-4566-b024-dc8b389e3412)
-
 ---
 
-### 4. Search `DeviceProcessEvents` table for instances of powershell
+### 4. Create custom NSG for `windows-target-1`
 
-Just prior to the launch of `portscan.ps1` from powershell I found a `InitiatingProcessParentFileName` of `userinit.exe` which suggests a user initiated powershell session at: Apr 20, 2025 8:12:10 AM.
+I pivoted to Azure and created a custom NSG for “windows-target-1” to isolate it from external traffic.
 
-**Query used to locate events:**
+- Allow-RDP-Personal-Device: to allow administrative access
+- Deny-RDP-Internet: Blocks RDP from public sources.
+- Deny-HTTP-HTTPS: Stops web exposure unless explicitly needed.
+- Allow-AzureServices: Lets platform services (like health probes) work.
+- Allow-Defender: Ensures Microsoft Defender for Endpoint can send telemetry.
+- Allow-Windows-Updates: So the VM stays patched.
+- Deny-All-Outbound: Locks down unknown traffic — can whitelist more if needed.
+- Deny-All-Inbound: Catches everything not explicitly allowed.
 
-```kql
-// Instances of Powershell
-let SpecificTime = datetime(2025-04-20T13:12:29.9031119Z);
-DeviceProcessEvents
-| where DeviceName == "edr-machine"
-| where FileName == "powershell.exe"
-| where Timestamp between ((SpecificTime - 1m) .. (SpecificTime + 1m))
-| project Timestamp, DeviceName, ActionType, FileName, ProcessCommandLine, FolderPath, InitiatingProcessParentFileName, LogonId
-| sort by Timestamp asc
 
-```
-![image](https://github.com/user-attachments/assets/f0bb2bab-89a7-425b-97a3-79878f7d5298)
+![image](https://github.com/user-attachments/assets/51afcb9f-7ca8-4860-b9de-7975847a83aa)
+
 
 ---
 
