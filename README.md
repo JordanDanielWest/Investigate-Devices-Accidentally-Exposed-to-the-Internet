@@ -150,6 +150,76 @@ After identifying `windows-target-1` as unintentionally exposed to the public in
 ## Conclusion
 In this lab, we observed and mitigated brute-force login attempts targeting an exposed VM. The primary steps taken to reduce the risk of future attacks included isolating the machine using a custom NSG, implementing an account lockout policy, and used Defender for Endpoint to detect suspicious activities. These actions were aligned with best practices for securing exposed devices and preventing credential-based attacks.
 
+---
+### Lab Summary — Mapped to NIST 800-61 Incident Response Lifecycle
+## 1. Preparation
 
+    Reviewed the environment and identified that the target machine (windows-target-1) was potentially exposed to the public internet.
+
+    Familiarized with NSG management in Azure, Defender for Endpoint, and safe remote access practices.
+
+    Used VPN for secure admin connectivity and pre-configured Azure access to limit risk during changes.
+
+## 2. Detection & Analysis
+
+    Conducted threat hunting with KQL queries:
+
+        Checked for brute-force attempts and verified no successful logins from suspicious external IPs.
+
+        Investigated internal logon events and account usage patterns.
+
+    Confirmed the device was publicly accessible when it should have been private-facing.
+
+    Determined risk due to potential exposure even in absence of successful exploitation.
+
+## 3. Containment, Eradication, & Recovery
+
+    Created a custom NSG (EDR-Machine Isolation) with:
+
+        Deny all inbound except RDP from trusted IP (admin device).
+
+        Deny all outbound to prevent external C2 communication while preserving internal traffic if necessary (e.g., DNS/DHCP functionality).
+
+    Applied NSG directly to the VM's NIC, not the subnet, to isolate just the affected machine.
+
+ Eradication
+
+    Implemented an account lockout policy to defend against brute-force attempts:
+
+        Lockout after 5 failed login attempts.
+
+        15-minute lockout duration.
+
+        Manual unlock for privileged accounts if needed.
+
+ Recovery
+
+    Verified safe, controlled RDP access for future administrative work.
+
+    Left internal communication intact for shared services if applicable.
+
+    Documented configuration changes and rule names professionally (e.g., Allow-RDP-From-Admin-Workstation).
+
+## 4. Post-Incident Activity
+
+    Reviewed and confirmed:
+
+        NSG rule effectiveness.
+
+        Account lockout policy enforcement.
+
+        Continued service availability (if part of shared infrastructure).
+
+    Lab considered complete and stable.
+
+    Lessons learned:
+
+        Importance of exposure audits.
+
+        Need for segmentation and default-deny configurations.
+
+        Value of fast isolation methods (e.g., NIC-level NSGs).
+
+    Prepared lab for public or academic presentation while using a VPN to shield personal IP.
 ---
 
