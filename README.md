@@ -90,17 +90,17 @@ DeviceLogonEvents
 
 I pivoted to Azure and created a custom NSG for “windows-target-1” to isolate it from external traffic.
 
-- Allow-RDP-Personal-Device: to allow administrative access
+- Permit-RDP-Trusted-Device: to allow administrative access.
 - Deny-RDP-Internet: Blocks RDP from public sources.
 - Deny-HTTP-HTTPS: Stops web exposure unless explicitly needed.
-- Allow-AzureServices: Lets platform services (like health probes) work.
+- Allow-AzureServices: Lets platform services work.
 - Allow-Defender: Ensures Microsoft Defender for Endpoint can send telemetry.
 - Allow-Windows-Updates: So the VM stays patched.
 - Deny-All-Outbound: Locks down unknown traffic — can whitelist more if needed.
 - Deny-All-Inbound: Catches everything not explicitly allowed.
 
+![image](https://github.com/user-attachments/assets/c55d7730-c9cc-40ed-8e40-aa2551358768)
 
-![image](https://github.com/user-attachments/assets/b1a8b2fe-18a8-4572-8475-67e563a49939)
 
 
 
